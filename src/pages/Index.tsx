@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import Header from '@/components/Header';
+import HomePage from '@/components/HomePage';
 import CalculationForm from '@/components/CalculationForm';
 import Results from '@/components/Results';
 import LearningModules from '@/components/LearningModules';
@@ -8,7 +9,7 @@ import { DamParameters, CalculationResults, AppView } from '@/types';
 import { calculateResults } from '@/utils/calculations';
 
 const Index = () => {
-  const [appView, setAppView] = useState<AppView>('calculator');
+  const [appView, setAppView] = useState<AppView>('home');
   const [damParams, setDamParams] = useState<DamParameters | null>(null);
   const [calculationResults, setCalculationResults] = useState<CalculationResults | null>(null);
 
@@ -33,6 +34,10 @@ const Index = () => {
       <Header currentView={appView} setView={setAppView} />
       
       <main className="flex-1 container py-6 px-4 animate-fade-in">
+        {appView === 'home' && (
+          <HomePage setView={setAppView} />
+        )}
+        
         {appView === 'calculator' && (
           <CalculationForm 
             onCalculate={handleCalculate} 

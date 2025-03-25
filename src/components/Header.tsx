@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Menu } from 'lucide-react';
+import { Menu, Home } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { AppView } from '@/types';
 
@@ -17,11 +17,20 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView }) => {
           <img 
             src="/lovable-uploads/e8d87a91-6ea3-405b-b1fc-c6571fd80ca9.png" 
             alt="GravIT Logo" 
-            className="h-12 w-auto" 
+            className="h-12 w-auto cursor-pointer"
+            onClick={() => setView('home')}
           />
         </div>
         
         <div className="flex space-x-1">
+          <Button 
+            variant="ghost" 
+            className={`text-white hover:bg-gravit-lightBlue ${currentView === 'home' ? 'bg-gravit-lightBlue' : ''}`}
+            onClick={() => setView('home')}
+          >
+            <Home className="mr-1 h-4 w-4" />
+            Home
+          </Button>
           <Button 
             variant="ghost" 
             className={`text-white hover:bg-gravit-lightBlue ${currentView === 'calculator' ? 'bg-gravit-lightBlue' : ''}`}

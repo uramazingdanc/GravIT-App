@@ -7,7 +7,10 @@ export interface DamDimensions {
   length: number;
 }
 
+export type DamShape = 'triangular' | 'rectangular' | 'stepped' | 'curved';
+
 export interface DamParameters {
+  shape: DamShape;
   dimensions: DamDimensions;
   concreteUnitWeight: number;
   waterUnitWeight: number;
@@ -53,4 +56,4 @@ export interface SampleProblem {
 }
 
 // App Navigation Types
-export type AppView = 'calculator' | 'results' | 'learning' | 'sample-problems';
+export type AppView = 'home' | 'calculator' | 'results' | 'learning' | 'sample-problems';

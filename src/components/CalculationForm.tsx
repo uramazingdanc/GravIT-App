@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { DamParameters } from '@/types';
+import { DamParameters, DamShape } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { damShapeDetails } from '@/util/damShapes';
 import {
   Card,
   CardContent,
@@ -21,6 +23,7 @@ interface CalculationFormProps {
 }
 
 const defaultParams: DamParameters = {
+  shape: 'triangular',
   dimensions: {
     height: 30,
     topWidth: 5,
@@ -39,7 +42,7 @@ const defaultParams: DamParameters = {
 
 const CalculationForm: React.FC<CalculationFormProps> = ({ onCalculate, initialParams }) => {
   const [params, setParams] = useState<DamParameters>(initialParams || defaultParams);
-  const [activeTab, setActiveTab] = useState<string>('dimensions');
+  const [activeTab, setActiveTab] = useState<string>('shape');
 
   useEffect(() => {
     if (initialParams) {
@@ -71,6 +74,13 @@ const CalculationForm: React.FC<CalculationFormProps> = ({ onCalculate, initialP
           : parseFloat(value) || 0,
       });
     }
+  };
+
+  const handleShapeChange = (value: string) => {
+    setParams({
+      ...params,
+      shape: value as DamShape,
+    });
   };
 
   const handleSwitchChange = (checked: boolean) => {
@@ -156,12 +166,37 @@ const CalculationForm: React.FC<CalculationFormProps> = ({ onCalculate, initialP
                 </div>
               </div>
 
-              <Tabs defaultValue="dimensions" value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid grid-cols-3 w-full bg-gravit-gray">
+              <Tabs defaultValue="shape" value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid grid-cols-4 w-full bg-gravit-gray">
+                  <TabsTrigger value="shape">Shape</TabsTrigger>
                   <TabsTrigger value="dimensions">Dimensions</TabsTrigger>
                   <TabsTrigger value="materials">Materials</TabsTrigger>
                   <TabsTrigger value="conditions">Conditions</TabsTrigger>
                 </TabsList>
+                
+                <TabsContent value="shape" className="space-y-4 mt-4">
+                  <div className="space-y-4">
+                    <Label className="input-label">Dam Shape</Label>
+                    <RadioGroup 
+                      value={params.shape} 
+                      onValueChange={handleShapeChange}
+                      className="grid grid-cols-1 gap-2"
+                    >
+                      {Object.entries(damShapeDetails).map(([value, { name, description, color }]) => (
+                        <label 
+                          key={value}
+                          className={`flex items-start space-x-2 p-3 border rounded-md cursor-pointer hover:bg-gray-50 ${params.shape === value ? `${color} border-l-4` : 'border-gray-200'}`}
+                        >
+                          <RadioGroupItem value={value} id={`shape-${value}`} />
+                          <div className="space-y-1">
+                            <span className="font-medium block">{name}</span>
+                            <span className="text-sm text-gray-500">{description}</span>
+                          </div>
+                        </label>
+                      ))}
+                    </RadioGroup>
+                  </div>
+                </TabsContent>
                 
                 <TabsContent value="dimensions" className="space-y-4 mt-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -388,7 +423,8 @@ const CalculationForm: React.FC<CalculationFormProps> = ({ onCalculate, initialP
                   type="button" 
                   variant="outline"
                   onClick={() => {
-                    if (activeTab === 'dimensions') setActiveTab('materials');
+                    if (activeTab === 'shape') setActiveTab('dimensions');
+                    else if (activeTab === 'dimensions') setActiveTab('materials');
                     else if (activeTab === 'materials') setActiveTab('conditions');
                   }}
                   disabled={activeTab === 'conditions'}

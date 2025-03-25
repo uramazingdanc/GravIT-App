@@ -53,17 +53,89 @@ const DamVisualization: React.FC<DamVisualizationProps> = ({ params, results }) 
     ctx.fill();
     ctx.stroke();
     
-    // Draw dam
+    // Draw dam based on shape
     ctx.beginPath();
     ctx.fillStyle = '#B0BEC5';
     ctx.strokeStyle = '#37474F';
     ctx.lineWidth = 2;
     
-    // Dam shape (trapezoidal)
-    ctx.moveTo(originX, originY); // Bottom left
-    ctx.lineTo(originX + damBottomWidth, originY); // Bottom right
-    ctx.lineTo(originX + damBottomWidth - (damBottomWidth - damTopWidth) / 2, originY - damHeight); // Top right
-    ctx.lineTo(originX + (damBottomWidth - damTopWidth) / 2, originY - damHeight); // Top left
+    // Dam shape
+    switch (params.shape) {
+      case 'triangular':
+        // Triangular/trapezoidal shape
+        ctx.moveTo(originX, originY); // Bottom left
+        ctx.lineTo(originX + damBottomWidth, originY); // Bottom right
+        ctx.lineTo(originX + damBottomWidth - (damBottomWidth - damTopWidth) / 2, originY - damHeight); // Top right
+        ctx.lineTo(originX + (damBottomWidth - damTopWidth) / 2, originY - damHeight); // Top left
+        break;
+        
+      case 'rectangular':
+        // Rectangular shape
+        ctx.moveTo(originX, originY); // Bottom left
+        ctx.lineTo(originX + damBottomWidth, originY); // Bottom right
+        ctx.lineTo(originX + damBottomWidth, originY - damHeight); // Top right
+        ctx.lineTo(originX, originY - damHeight); // Top left
+        break;
+        
+      case 'stepped':
+        // Stepped shape
+        const stepCount = 5;
+        const stepHeight = damHeight / stepCount;
+        const stepWidth = (damBottomWidth - damTopWidth) / stepCount;
+        
+        ctx.moveTo(originX, originY); // Bottom left
+        ctx.lineTo(originX + damBottomWidth, originY); // Bottom right
+        
+        // Draw steps
+        for (let i = 0; i < stepCount; i++) {
+          const currentHeight = i * stepHeight;
+          const nextHeight = (i + 1) * stepHeight;
+          const currentWidth = damBottomWidth - i * stepWidth;
+          const nextWidth = damBottomWidth - (i + 1) * stepWidth;
+          
+          ctx.lineTo(originX + currentWidth, originY - currentHeight);
+          ctx.lineTo(originX + currentWidth, originY - nextHeight);
+          ctx.lineTo(originX + nextWidth, originY - nextHeight);
+        }
+        
+        ctx.lineTo(originX, originY - damHeight); // Top left
+        break;
+        
+      case 'curved':
+        // Curved shape (with arch-like top)
+        ctx.moveTo(originX, originY); // Bottom left
+        ctx.lineTo(originX + damBottomWidth, originY); // Bottom right
+        
+        // Create curved top
+        const centerX = originX + damBottomWidth / 2;
+        const radius = damBottomWidth / 2;
+        
+        // Right side curve
+        ctx.lineTo(originX + damBottomWidth, originY - damHeight + radius);
+        ctx.quadraticCurveTo(
+          originX + damBottomWidth, 
+          originY - damHeight,
+          centerX + damTopWidth / 2, 
+          originY - damHeight
+        );
+        
+        // Left side curve
+        ctx.quadraticCurveTo(
+          originX, 
+          originY - damHeight,
+          originX, 
+          originY - damHeight + radius
+        );
+        break;
+        
+      default:
+        // Default to triangular
+        ctx.moveTo(originX, originY); // Bottom left
+        ctx.lineTo(originX + damBottomWidth, originY); // Bottom right
+        ctx.lineTo(originX + damBottomWidth - (damBottomWidth - damTopWidth) / 2, originY - damHeight); // Top right
+        ctx.lineTo(originX + (damBottomWidth - damTopWidth) / 2, originY - damHeight); // Top left
+    }
+    
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -72,20 +144,76 @@ const DamVisualization: React.FC<DamVisualizationProps> = ({ params, results }) 
     ctx.beginPath();
     ctx.fillStyle = 'rgba(33, 150, 243, 0.5)';
     ctx.moveTo(0, originY - waterLevel);
-    ctx.lineTo(originX + (damBottomWidth - damTopWidth) / 2, originY - waterLevel);
+    
+    // Left water boundary
+    const leftWaterX = Math.min(
+      originX + (params.shape === 'rectangular' ? 0 : (damBottomWidth - damTopWidth) / 2), 
+      originX
+    );
+    ctx.lineTo(leftWaterX, originY - waterLevel);
     
     // If water level is below dam height, draw water up to dam
     if (waterLevel < damHeight) {
       const waterHeightRatio = waterLevel / damHeight;
-      const damWidthAtWaterLevel = damBottomWidth - (damBottomWidth - damTopWidth) * waterHeightRatio;
-      const damLeftXAtWaterLevel = originX + (damBottomWidth - damWidthAtWaterLevel) / 2;
+      
+      // Calculate dam width at water level based on shape
+      let damWidthAtWaterLevel = damBottomWidth;
+      let damLeftXAtWaterLevel = originX;
+      
+      switch (params.shape) {
+        case 'triangular':
+          damWidthAtWaterLevel = damBottomWidth - (damBottomWidth - damTopWidth) * waterHeightRatio;
+          damLeftXAtWaterLevel = originX + (damBottomWidth - damWidthAtWaterLevel) / 2;
+          break;
+          
+        case 'rectangular':
+          // Width is constant
+          break;
+          
+        case 'stepped':
+          // Approximate the stepped shape
+          const stepIndex = Math.floor(waterHeightRatio * 5);
+          damWidthAtWaterLevel = damBottomWidth - stepIndex * (damBottomWidth - damTopWidth) / 5;
+          damLeftXAtWaterLevel = originX;
+          break;
+          
+        case 'curved':
+          // Approximate the curved shape
+          damWidthAtWaterLevel = damBottomWidth - (damBottomWidth - damTopWidth) * Math.pow(waterHeightRatio, 2);
+          damLeftXAtWaterLevel = originX;
+          break;
+      }
       
       ctx.lineTo(damLeftXAtWaterLevel, originY - waterLevel);
     } else {
       // If water overtops dam, draw water across the top
-      ctx.lineTo(originX + (damBottomWidth - damTopWidth) / 2, originY - damHeight);
-      ctx.lineTo(originX + damBottomWidth - (damBottomWidth - damTopWidth) / 2, originY - damHeight);
-      ctx.lineTo(originX + damBottomWidth - (damBottomWidth - damTopWidth) / 2, originY - waterLevel);
+      if (params.shape === 'triangular') {
+        ctx.lineTo(originX + (damBottomWidth - damTopWidth) / 2, originY - damHeight);
+        ctx.lineTo(originX + damBottomWidth - (damBottomWidth - damTopWidth) / 2, originY - damHeight);
+      } else if (params.shape === 'rectangular') {
+        ctx.lineTo(originX, originY - damHeight);
+        ctx.lineTo(originX + damBottomWidth, originY - damHeight);
+      } else if (params.shape === 'stepped') {
+        ctx.lineTo(originX, originY - damHeight);
+        ctx.lineTo(originX + damTopWidth, originY - damHeight);
+      } else if (params.shape === 'curved') {
+        ctx.lineTo(originX, originY - damHeight + (damBottomWidth - damTopWidth) / 2);
+        
+        // Draw along the curved top
+        ctx.quadraticCurveTo(
+          originX + damBottomWidth / 4, 
+          originY - damHeight - 10,
+          originX + damBottomWidth / 2, 
+          originY - damHeight
+        );
+        
+        ctx.quadraticCurveTo(
+          originX + 3 * damBottomWidth / 4, 
+          originY - damHeight - 10,
+          originX + damBottomWidth, 
+          originY - damHeight + (damBottomWidth - damTopWidth) / 2
+        );
+      }
     }
     
     ctx.lineTo(0, originY - waterLevel);
@@ -199,6 +327,11 @@ const DamVisualization: React.FC<DamVisualizationProps> = ({ params, results }) 
     ctx.fillStyle = '#2196F3';
     ctx.fillText(`Water: ${params.waterLevel} ${params.unitSystem === 'SI' ? 'm' : 'ft'}`, 
                 10, originY - waterLevel - 10);
+    
+    // Dam shape
+    ctx.fillStyle = '#37474F';
+    ctx.fillText(`Shape: ${params.shape.charAt(0).toUpperCase() + params.shape.slice(1)}`, 
+                10, 20);
     
   }, [params, results]);
   
