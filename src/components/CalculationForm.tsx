@@ -56,23 +56,23 @@ const CalculationForm: React.FC<CalculationFormProps> = ({ onCalculate, initialP
     // Handle nested properties
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
-      setParams({
-        ...params,
+      setParams(prev => ({
+        ...prev,
         [parent]: {
-          ...params[parent as keyof DamParameters],
+          ...prev[parent as keyof DamParameters] as object,
           [child]: type === 'checkbox' 
             ? (e.target as HTMLInputElement).checked 
             : parseFloat(value) || 0,
         },
-      });
+      }));
     } else {
       // Handle non-nested properties
-      setParams({
-        ...params,
+      setParams(prev => ({
+        ...prev,
         [name]: type === 'checkbox' 
           ? (e.target as HTMLInputElement).checked 
           : parseFloat(value) || 0,
-      });
+      }));
     }
   };
 

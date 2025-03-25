@@ -1,393 +1,399 @@
 
 import React, { useState } from 'react';
-import { LearningModule, SampleProblem, DamParameters } from '@/types';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { calculateResults } from '@/utils/calculations';
+import { Button } from "@/components/ui/button";
+import { SampleProblem, DamParameters } from '@/types';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { ArrowRight, Calculator, Book, Lightbulb } from 'lucide-react';
 
 interface LearningModulesProps {
   onLoadSampleProblem: (params: DamParameters) => void;
 }
 
-const learningModules: LearningModule[] = [
-  {
-    id: 'intro',
-    title: 'Introduction to Gravity Dams',
-    description: 'Learn the fundamental concepts and principles behind gravity dam design.',
-    duration: '10 min',
-    content: (
-      <div className="space-y-4">
-        <p>
-          Gravity dams are solid structures that maintain their stability against design loads primarily by means of their weight. 
-          These massive concrete structures are designed to hold back large volumes of water by using their own weight to resist 
-          the horizontal pressure of water pushing against the dam.
-        </p>
-        
-        <h4 className="font-medium text-gravit-darkBlue mt-4">Key Characteristics:</h4>
-        <ul className="list-disc pl-5 space-y-2">
-          <li>
-            <strong>Trapezoidal Cross-section:</strong> Typically wider at the base and narrower at the top to distribute pressure efficiently.
-          </li>
-          <li>
-            <strong>Material:</strong> Usually constructed with concrete, sometimes with a rubble or masonry core.
-          </li>
-          <li>
-            <strong>Stability Mechanism:</strong> Relies primarily on weight rather than structural strength.
-          </li>
-        </ul>
-        
-        <h4 className="font-medium text-gravit-darkBlue mt-4">Forces Acting on Gravity Dams:</h4>
-        <ul className="list-disc pl-5 space-y-2">
-          <li>
-            <strong>Self-weight:</strong> The dam's own weight is the primary stabilizing force.
-          </li>
-          <li>
-            <strong>Hydrostatic Pressure:</strong> Horizontal force exerted by water against the dam face.
-          </li>
-          <li>
-            <strong>Uplift Pressure:</strong> Upward force due to water pressure under the dam foundation.
-          </li>
-          <li>
-            <strong>External Loads:</strong> Including ice pressure, silt pressure, earthquake forces, etc.
-          </li>
-        </ul>
-        
-        <div className="mt-6 p-4 bg-gravit-gray rounded-lg">
-          <h4 className="font-medium text-gravit-darkBlue">Important Design Considerations:</h4>
-          <ul className="list-disc pl-5 space-y-1 mt-2">
-            <li>The dam must resist overturning about the toe.</li>
-            <li>It must resist sliding along any horizontal plane, particularly the foundation.</li>
-            <li>It must resist crushing due to excessive compression.</li>
-            <li>Settlement must be within acceptable limits.</li>
-          </ul>
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: 'forces',
-    title: 'Understanding Forces and Moments',
-    description: 'Explore the various forces and moments that affect gravity dam stability.',
-    duration: '15 min',
-    content: (
-      <div className="space-y-4">
-        <h4 className="font-medium text-gravit-darkBlue">Hydrostatic Pressure</h4>
-        <p>
-          Hydrostatic pressure is the force exerted by water against the upstream face of the dam. It increases linearly with depth
-          and acts perpendicular to the dam face at every point.
-        </p>
-        <div className="bg-gravit-gray rounded-lg p-3 my-3">
-          <strong>Formula:</strong> P = γw × h
-          <p className="text-sm text-gravit-darkBlue mt-1">
-            Where P is pressure at depth h, γw is the unit weight of water, and h is the depth from water surface.
-          </p>
-        </div>
-        <p>
-          The total force due to hydrostatic pressure on a unit length of dam is equal to the area of the pressure diagram,
-          which is triangular in shape for a vertical upstream face.
-        </p>
-        <div className="bg-gravit-gray rounded-lg p-3 my-3">
-          <strong>Total Force:</strong> F = ½ × γw × H² × L
-          <p className="text-sm text-gravit-darkBlue mt-1">
-            Where H is the height of water and L is the length of the dam.
-          </p>
-        </div>
-        
-        <h4 className="font-medium text-gravit-darkBlue mt-6">Self-Weight</h4>
-        <p>
-          The self-weight of the dam is the primary stabilizing force that resists overturning and sliding.
-          It depends on the volume of the dam and the unit weight of the material used.
-        </p>
-        <div className="bg-gravit-gray rounded-lg p-3 my-3">
-          <strong>Formula:</strong> W = γc × V
-          <p className="text-sm text-gravit-darkBlue mt-1">
-            Where W is the weight, γc is the unit weight of concrete, and V is the volume of the dam section.
-          </p>
-        </div>
-        
-        <h4 className="font-medium text-gravit-darkBlue mt-6">Uplift Pressure</h4>
-        <p>
-          Uplift pressure is caused by water percolating under the dam foundation. It acts upward and reduces the effective weight of the dam.
-        </p>
-        <div className="bg-gravit-gray rounded-lg p-3 my-3">
-          <strong>Uplift Force:</strong> U = (h₁ + h₂) / 2 × B × γw × L
-          <p className="text-sm text-gravit-darkBlue mt-1">
-            Where h₁ is the uplift head at heel, h₂ is the uplift head at toe, B is the base width, and L is the length.
-          </p>
-        </div>
-        
-        <h4 className="font-medium text-gravit-darkBlue mt-6">Moments</h4>
-        <p>
-          Moments cause rotation about a point (typically the toe of the dam) and are crucial for stability analysis.
-        </p>
-        <ul className="list-disc pl-5 space-y-2 mt-2">
-          <li>
-            <strong>Overturning Moment:</strong> Caused by horizontal forces like hydrostatic pressure trying to rotate the dam about its toe.
-          </li>
-          <li>
-            <strong>Resisting Moment:</strong> Provided by the self-weight of the dam, counteracting the overturning moment.
-          </li>
-        </ul>
-      </div>
-    ),
-  },
-  {
-    id: 'stability',
-    title: 'Stability Analysis of Gravity Dams',
-    description: 'Learn how to analyze and ensure the stability of gravity dam structures.',
-    duration: '20 min',
-    content: (
-      <div className="space-y-4">
-        <p>
-          Stability analysis is critical in gravity dam design to ensure the structure can withstand all applied forces without failure.
-          The primary stability criteria include resistance to overturning, sliding, and stress limitations.
-        </p>
-        
-        <h4 className="font-medium text-gravit-darkBlue mt-4">1. Overturning Stability</h4>
-        <p>
-          Overturning stability ensures the dam will not rotate about its toe due to the lateral pressure of water.
-        </p>
-        <div className="bg-gravit-gray rounded-lg p-3 my-3">
-          <strong>Factor of Safety Against Overturning:</strong> FSo = ΣMr / ΣMo
-          <p className="text-sm text-gravit-darkBlue mt-1">
-            Where ΣMr is the sum of resisting moments and ΣMo is the sum of overturning moments.
-          </p>
-          <p className="text-sm font-medium text-gravit-blue mt-2">
-            For adequate stability, FSo should be at least 1.5.
-          </p>
-        </div>
-        
-        <h4 className="font-medium text-gravit-darkBlue mt-6">2. Sliding Stability</h4>
-        <p>
-          Sliding stability ensures the dam will not slide horizontally along its foundation or any horizontal plane.
-        </p>
-        <div className="bg-gravit-gray rounded-lg p-3 my-3">
-          <strong>Factor of Safety Against Sliding:</strong> FSs = (f × ΣV) / ΣH
-          <p className="text-sm text-gravit-darkBlue mt-1">
-            Where f is the coefficient of friction, ΣV is the sum of vertical forces, and ΣH is the sum of horizontal forces.
-          </p>
-          <p className="text-sm font-medium text-gravit-blue mt-2">
-            For adequate stability, FSs should be at least 1.5.
-          </p>
-        </div>
-        
-        <h4 className="font-medium text-gravit-darkBlue mt-6">3. Stress Analysis</h4>
-        <p>
-          Stress analysis ensures that compressive and tensile stresses in the dam are within permissible limits.
-        </p>
-        <div className="bg-gravit-gray rounded-lg p-3 my-3">
-          <strong>Maximum Stress at Toe:</strong> σtoe = (ΣV / B) × (1 + 6e/B)
-          <p className="text-sm text-gravit-darkBlue mt-1">
-            Where ΣV is the sum of vertical forces, B is the base width, and e is the eccentricity.
-          </p>
-          <p className="text-sm font-medium text-gravit-blue mt-2">
-            Compressive stress should not exceed the allowable stress for the material.
-            Tensile stress is typically not permitted in conventional gravity dams.
-          </p>
-        </div>
-        
-        <h4 className="font-medium text-gravit-darkBlue mt-6">4. Location of Resultant</h4>
-        <p>
-          The resultant of all forces should fall within the middle third of the base for no tension to develop.
-        </p>
-        <div className="bg-gravit-gray rounded-lg p-3 my-3">
-          <strong>Location of Resultant:</strong> x = (ΣMr - ΣMo) / ΣV
-          <p className="text-sm text-gravit-darkBlue mt-1">
-            Where x is the distance from the toe, ΣMr is the sum of resisting moments, ΣMo is the sum of overturning moments, and ΣV is the sum of vertical forces.
-          </p>
-          <p className="text-sm font-medium text-gravit-blue mt-2">
-            For no tension to develop: B/3 ≤ x ≤ 2B/3, where B is the base width.
-          </p>
-        </div>
-      </div>
-    ),
-  },
-];
-
-const sampleProblems: SampleProblem[] = [
-  {
-    id: 'sample1',
-    title: 'Basic Gravity Dam Analysis',
-    difficulty: 'Beginner',
-    description: 'A simple gravity dam with a trapezoidal cross-section and basic loading conditions.',
-    parameters: {
-      dimensions: {
-        height: 25,
-        topWidth: 5,
-        bottomWidth: 18,
-        length: 100,
-      },
-      concreteUnitWeight: 23.5,
-      waterUnitWeight: 9.81,
-      waterLevel: 23,
-      coefficientOfFriction: 0.7,
-      useUplift: false,
-      unitSystem: 'SI',
-    }
-  },
-  {
-    id: 'sample2',
-    title: 'Dam with Hydrostatic Uplift',
-    difficulty: 'Intermediate',
-    description: 'A gravity dam analysis considering the effects of hydrostatic uplift pressure.',
-    parameters: {
-      dimensions: {
-        height: 30,
-        topWidth: 6,
-        bottomWidth: 22,
-        length: 100,
-      },
-      concreteUnitWeight: 23.5,
-      waterUnitWeight: 9.81,
-      waterLevel: 28,
-      coefficientOfFriction: 0.75,
-      useUplift: true,
-      upliftAtHeel: 28,
-      upliftAtToe: 0,
-      unitSystem: 'SI',
-    }
-  },
-  {
-    id: 'sample3',
-    title: 'High Dam with Critical Stability',
-    difficulty: 'Advanced',
-    description: 'A tall gravity dam with challenging stability conditions at the limit of safety factors.',
-    parameters: {
-      dimensions: {
-        height: 45,
-        topWidth: 8,
-        bottomWidth: 35,
-        length: 100,
-      },
-      concreteUnitWeight: 24.0,
-      waterUnitWeight: 9.81,
-      waterLevel: 42,
-      coefficientOfFriction: 0.65,
-      useUplift: true,
-      upliftAtHeel: 42,
-      upliftAtToe: 5,
-      unitSystem: 'SI',
-    }
-  },
-];
-
 const LearningModules: React.FC<LearningModulesProps> = ({ onLoadSampleProblem }) => {
-  const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('theory');
   
-  const handleModuleClick = (moduleId: string) => {
-    setActiveModuleId(activeModuleId === moduleId ? null : moduleId);
-  };
-  
-  const handleLoadSampleProblem = (params: DamParameters) => {
-    onLoadSampleProblem(params);
+  const handleLoadProblem = (problem: SampleProblem) => {
+    onLoadSampleProblem(problem.parameters);
   };
   
   return (
-    <div className="w-full max-w-4xl mx-auto animate-fade-in">
-      <Tabs defaultValue="modules" className="w-full">
-        <TabsList className="w-full grid grid-cols-2">
-          <TabsTrigger value="modules">Learning Modules</TabsTrigger>
-          <TabsTrigger value="examples">Sample Problems</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="modules" className="mt-6 space-y-6">
-          <div className="grid grid-cols-1 gap-6">
-            {learningModules.map((module) => (
-              <div key={module.id}>
-                <Card className={`learning-card cursor-pointer transition-all ${activeModuleId === module.id ? 'shadow-md' : 'hover:shadow-md'}`}>
-                  <CardHeader 
-                    className="pb-2" 
-                    onClick={() => handleModuleClick(module.id)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg text-gravit-blue">{module.title}</CardTitle>
-                      {module.duration && (
-                        <Badge variant="outline" className="bg-gravit-gray text-gravit-darkBlue">
-                          {module.duration}
-                        </Badge>
-                      )}
+    <div className="w-full max-w-5xl mx-auto animate-fade-in">
+      <Card className="glow-shadow">
+        <CardHeader>
+          <CardTitle className="text-2xl text-gravit-blue">Learning Center</CardTitle>
+          <CardDescription>
+            Browse through theoretical concepts and practical examples to master gravity dam calculations
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid grid-cols-3 w-full bg-gravit-gray mb-6">
+              <TabsTrigger value="theory" className="flex items-center">
+                <Book className="mr-2 h-4 w-4" />
+                Theory
+              </TabsTrigger>
+              <TabsTrigger value="examples" className="flex items-center">
+                <Calculator className="mr-2 h-4 w-4" />
+                Examples
+              </TabsTrigger>
+              <TabsTrigger value="practice" className="flex items-center">
+                <Lightbulb className="mr-2 h-4 w-4" />
+                Practice Problems
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="theory" className="space-y-4">
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="gravity-dams">
+                  <AccordionTrigger className="text-lg font-medium">
+                    Introduction to Gravity Dams
+                  </AccordionTrigger>
+                  <AccordionContent className="text-base space-y-3">
+                    <p>
+                      Gravity dams are solid structures made of concrete or masonry that maintain their stability against design loads purely by their weight. 
+                      A key characteristic of gravity dams is their triangular profile, with a wide base that helps resist the water pressure.
+                    </p>
+                    <p>
+                      The primary forces acting on a gravity dam include:
+                    </p>
+                    <ul className="list-disc list-inside space-y-1 ml-4">
+                      <li>The weight of the dam itself</li>
+                      <li>The hydrostatic pressure from the reservoir</li>
+                      <li>Uplift pressure from water seeping under the dam</li>
+                      <li>Earth or silt pressure</li>
+                      <li>Wave pressure and ice pressure (in cold regions)</li>
+                      <li>Earthquake forces in seismic zones</li>
+                    </ul>
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="stability-analysis">
+                  <AccordionTrigger className="text-lg font-medium">
+                    Stability Analysis of Gravity Dams
+                  </AccordionTrigger>
+                  <AccordionContent className="text-base space-y-3">
+                    <p>
+                      Stability analysis of gravity dams involves checking against several potential failure modes:
+                    </p>
+                    <ol className="list-decimal list-inside space-y-3 ml-4">
+                      <li>
+                        <strong>Overturning</strong>: The dam must resist the tendency to rotate about its toe due to water pressure. We calculate this using moments:
+                        <div className="bg-gray-100 p-3 rounded-md mt-2">
+                          Factor of Safety against Overturning = Resisting Moment / Overturning Moment
+                        </div>
+                        <p className="mt-1">A factor of safety of at least 1.5 is typically required.</p>
+                      </li>
+                      <li>
+                        <strong>Sliding</strong>: The dam must not slide horizontally along its foundation. This is calculated using:
+                        <div className="bg-gray-100 p-3 rounded-md mt-2">
+                          Factor of Safety against Sliding = (Coefficient of Friction × Vertical Forces) / Horizontal Forces
+                        </div>
+                        <p className="mt-1">A factor of safety of at least 1.2 is typically required.</p>
+                      </li>
+                      <li>
+                        <strong>Stress Analysis</strong>: The stresses in the dam and at the dam-foundation interface must be within acceptable limits to prevent material failure.
+                      </li>
+                    </ol>
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="dam-shapes">
+                  <AccordionTrigger className="text-lg font-medium">
+                    Types of Gravity Dam Shapes
+                  </AccordionTrigger>
+                  <AccordionContent className="text-base space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="border rounded-lg p-4 bg-white shadow-sm">
+                        <h4 className="font-semibold text-gravit-blue">Triangular (Trapezoidal)</h4>
+                        <p>The most common shape, with a wide base that tapers upward to efficiently resist water pressure and ensure stability.</p>
+                      </div>
+                      
+                      <div className="border rounded-lg p-4 bg-white shadow-sm">
+                        <h4 className="font-semibold text-gravit-yellow">Rectangular</h4>
+                        <p>A simpler design with a uniform cross-section, used in specific conditions where foundation stability is high.</p>
+                      </div>
+                      
+                      <div className="border rounded-lg p-4 bg-white shadow-sm">
+                        <h4 className="font-semibold text-gravit-green">Step (Stepped)</h4>
+                        <p>Features stepped faces on the downstream side to dissipate energy and reduce water impact forces.</p>
+                      </div>
+                      
+                      <div className="border rounded-lg p-4 bg-white shadow-sm">
+                        <h4 className="font-semibold text-gravit-purple">Curved</h4>
+                        <p>Slightly curved in plan view to add structural strength by utilizing arch action while still relying mainly on its weight.</p>
+                      </div>
                     </div>
-                    <CardDescription>{module.description}</CardDescription>
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="calculations">
+                  <AccordionTrigger className="text-lg font-medium">
+                    Key Calculations and Formulas
+                  </AccordionTrigger>
+                  <AccordionContent className="text-base space-y-3">
+                    <p>The main calculations involved in gravity dam analysis include:</p>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <strong>Self-weight of the dam:</strong>
+                        <div className="bg-gray-100 p-3 rounded-md mt-1">
+                          W = γ<sub>concrete</sub> × Volume
+                        </div>
+                        <p className="text-sm mt-1">Where γ<sub>concrete</sub> is the unit weight of concrete.</p>
+                      </div>
+                      
+                      <div>
+                        <strong>Hydrostatic pressure force:</strong>
+                        <div className="bg-gray-100 p-3 rounded-md mt-1">
+                          P = ½ × γ<sub>water</sub> × h<sup>2</sup> × b
+                        </div>
+                        <p className="text-sm mt-1">Where γ<sub>water</sub> is the unit weight of water, h is the height of water, and b is the unit length of the dam.</p>
+                      </div>
+                      
+                      <div>
+                        <strong>Uplift force (if applicable):</strong>
+                        <div className="bg-gray-100 p-3 rounded-md mt-1">
+                          U = γ<sub>water</sub> × Area of uplift diagram
+                        </div>
+                        <p className="text-sm mt-1">The uplift pressure distribution is typically trapezoidal, with maximum pressure at the heel and minimum at the toe.</p>
+                      </div>
+                      
+                      <div>
+                        <strong>Location of resultant vertical force:</strong>
+                        <div className="bg-gray-100 p-3 rounded-md mt-1">
+                          x = (Σ Moment about toe) / (Σ Vertical forces)
+                        </div>
+                        <p className="text-sm mt-1">For stability, the resultant should fall within the middle third of the base.</p>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </TabsContent>
+            
+            <TabsContent value="examples" className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card className="border-l-4 border-l-gravit-blue">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Basic Stability Analysis</CardTitle>
+                    <CardDescription>Triangular dam without uplift consideration</CardDescription>
                   </CardHeader>
-                  
-                  {activeModuleId === module.id && (
-                    <>
-                      <CardContent className="pt-4">
-                        {module.content}
-                      </CardContent>
-                      <CardFooter className="pt-2 flex justify-end">
-                        <Button 
-                          variant="ghost" 
-                          className="text-gravit-blue hover:text-gravit-darkBlue hover:bg-gravit-gray"
-                          onClick={() => handleModuleClick(module.id)}
-                        >
-                          Close
-                        </Button>
-                      </CardFooter>
-                    </>
-                  )}
+                  <CardContent className="text-sm">
+                    <p>A simple triangular gravity dam with 30m height and 20m base width.</p>
+                    <ul className="list-disc list-inside mt-2 space-y-1">
+                      <li>Water level: 28m</li>
+                      <li>Concrete unit weight: 23.5 kN/m³</li>
+                      <li>Coefficient of friction: 0.75</li>
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    <Button 
+                      variant="outline" 
+                      className="w-full flex items-center justify-center"
+                      onClick={() => handleLoadProblem({
+                        id: "example1",
+                        title: "Basic Stability Analysis",
+                        difficulty: "Beginner",
+                        description: "Triangular dam without uplift consideration",
+                        parameters: {
+                          shape: "triangular",
+                          dimensions: {
+                            height: 30,
+                            topWidth: 5,
+                            bottomWidth: 20,
+                            length: 100,
+                          },
+                          concreteUnitWeight: 23.5,
+                          waterUnitWeight: 9.81,
+                          waterLevel: 28,
+                          coefficientOfFriction: 0.75,
+                          useUplift: false,
+                          unitSystem: "SI",
+                        }
+                      })}
+                    >
+                      Try This Example <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border-l-4 border-l-gravit-yellow">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Intermediate Dam Analysis</CardTitle>
+                    <CardDescription>Rectangular dam with uplift forces</CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-sm">
+                    <p>A rectangular gravity dam subjected to both water pressure and uplift forces.</p>
+                    <ul className="list-disc list-inside mt-2 space-y-1">
+                      <li>Water level: 25m</li>
+                      <li>Uplift varies from 25m at heel to 0m at toe</li>
+                      <li>Concrete unit weight: 24 kN/m³</li>
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    <Button 
+                      variant="outline" 
+                      className="w-full flex items-center justify-center"
+                      onClick={() => handleLoadProblem({
+                        id: "example2",
+                        title: "Intermediate Dam Analysis",
+                        difficulty: "Intermediate",
+                        description: "Rectangular dam with uplift forces",
+                        parameters: {
+                          shape: "rectangular",
+                          dimensions: {
+                            height: 30,
+                            topWidth: 15,
+                            bottomWidth: 15,
+                            length: 100,
+                          },
+                          concreteUnitWeight: 24,
+                          waterUnitWeight: 9.81,
+                          waterLevel: 25,
+                          coefficientOfFriction: 0.70,
+                          useUplift: true,
+                          upliftAtHeel: 25,
+                          upliftAtToe: 0,
+                          unitSystem: "SI",
+                        }
+                      })}
+                    >
+                      Try This Example <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border-l-4 border-l-gravit-green">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Advanced Stability Assessment</CardTitle>
+                    <CardDescription>Stepped dam with complex water profile</CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-sm">
+                    <p>A stepped gravity dam with complex loading conditions and high water level.</p>
+                    <ul className="list-disc list-inside mt-2 space-y-1">
+                      <li>Water level: 35m (above dam height)</li>
+                      <li>Uplift control measures installed</li>
+                      <li>English unit system for calculations</li>
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    <Button 
+                      variant="outline" 
+                      className="w-full flex items-center justify-center"
+                      onClick={() => handleLoadProblem({
+                        id: "example3",
+                        title: "Advanced Stability Assessment",
+                        difficulty: "Advanced",
+                        description: "Stepped dam with complex water profile",
+                        parameters: {
+                          shape: "stepped",
+                          dimensions: {
+                            height: 35,
+                            topWidth: 8,
+                            bottomWidth: 25,
+                            length: 120,
+                          },
+                          concreteUnitWeight: 23.5,
+                          waterUnitWeight: 9.81,
+                          waterLevel: 32,
+                          coefficientOfFriction: 0.65,
+                          useUplift: true,
+                          upliftAtHeel: 30,
+                          upliftAtToe: 5,
+                          unitSystem: "SI",
+                        }
+                      })}
+                    >
+                      Try This Example <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border-l-4 border-l-gravit-purple">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Custom Dam Configuration</CardTitle>
+                    <CardDescription>Create your own problem parameters</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Ready to test your own scenario? Go to the calculator and input custom values to analyze a dam of your design.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button 
+                      className="w-full bg-gravit-blue hover:bg-gravit-lightBlue"
+                      onClick={() => onLoadSampleProblem({
+                        shape: "curved",
+                        dimensions: {
+                          height: 40,
+                          topWidth: 10,
+                          bottomWidth: 30,
+                          length: 150,
+                        },
+                        concreteUnitWeight: 23.5,
+                        waterUnitWeight: 9.81,
+                        waterLevel: 35,
+                        coefficientOfFriction: 0.70,
+                        useUplift: false,
+                        unitSystem: "SI",
+                      })}
+                    >
+                      Try Custom Configuration <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </CardFooter>
                 </Card>
               </div>
-            ))}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="examples" className="mt-6">
-          <div className="grid grid-cols-1 gap-6">
-            {sampleProblems.map((problem) => (
-              <Card key={problem.id} className="hover:shadow-md transition-all">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg text-gravit-blue">{problem.title}</CardTitle>
-                    <Badge 
-                      className={
-                        problem.difficulty === 'Beginner' 
-                          ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                          : problem.difficulty === 'Intermediate'
-                            ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-                            : 'bg-red-100 text-red-800 hover:bg-red-200'
-                      }
-                    >
-                      {problem.difficulty}
-                    </Badge>
-                  </div>
-                  <CardDescription>{problem.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <span className="font-medium text-gravit-darkBlue">Dam Height:</span>{' '}
-                      {problem.parameters.dimensions.height} {problem.parameters.unitSystem === 'SI' ? 'm' : 'ft'}
-                    </div>
-                    <div>
-                      <span className="font-medium text-gravit-darkBlue">Water Level:</span>{' '}
-                      {problem.parameters.waterLevel} {problem.parameters.unitSystem === 'SI' ? 'm' : 'ft'}
-                    </div>
-                    <div>
-                      <span className="font-medium text-gravit-darkBlue">Base Width:</span>{' '}
-                      {problem.parameters.dimensions.bottomWidth} {problem.parameters.unitSystem === 'SI' ? 'm' : 'ft'}
-                    </div>
-                    <div>
-                      <span className="font-medium text-gravit-darkBlue">Consider Uplift:</span>{' '}
-                      {problem.parameters.useUplift ? 'Yes' : 'No'}
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-end">
-                  <Button 
-                    className="bg-gravit-blue hover:bg-gravit-lightBlue"
-                    onClick={() => handleLoadSampleProblem(problem.parameters)}
-                  >
-                    Load Problem
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+            </TabsContent>
+            
+            <TabsContent value="practice" className="space-y-4">
+              <div className="bg-gray-50 p-6 rounded-lg text-center">
+                <h3 className="text-xl font-medium text-gravit-blue mb-3">Practice Problem Library</h3>
+                <p className="text-gray-600 mb-4">
+                  Our practice problem library is coming soon! You'll be able to test your skills with problems of varying difficulty.
+                </p>
+                <Button variant="outline" className="mr-4" disabled>
+                  Beginner Problems
+                </Button>
+                <Button variant="outline" className="mr-4" disabled>
+                  Intermediate Problems
+                </Button>
+                <Button variant="outline" disabled>
+                  Advanced Problems
+                </Button>
+              </div>
+              
+              <div className="p-4 border border-yellow-200 bg-yellow-50 rounded-md">
+                <h4 className="font-medium text-yellow-800 mb-2 flex items-center">
+                  <Lightbulb className="h-5 w-5 mr-2" />
+                  Pro Tip
+                </h4>
+                <p className="text-yellow-700 text-sm">
+                  While waiting for our full problem library, you can practice by modifying the example problems or creating your own scenarios in the calculator.
+                </p>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };
