@@ -80,14 +80,6 @@ const HomePage: React.FC<HomePageProps> = ({ setView }) => {
             <Book size={24} />
             <span>Learning Modules</span>
           </Button>
-          
-          <Button 
-            className="w-full h-24 flex flex-col items-center justify-center space-y-2 bg-gravit-blue hover:bg-gravit-lightBlue"
-            onClick={() => setView('sample-problems')}
-          >
-            <FileDigit size={24} />
-            <span>Sample Problems</span>
-          </Button>
         </div>
       </div>
     </div>

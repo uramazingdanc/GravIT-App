@@ -45,13 +45,6 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView }) => {
           >
             Learn
           </Button>
-          <Button 
-            variant="ghost" 
-            className={`text-white hover:bg-gravit-lightBlue ${currentView === 'sample-problems' ? 'bg-gravit-lightBlue' : ''}`}
-            onClick={() => setView('sample-problems')}
-          >
-            Examples
-          </Button>
         </div>
       </div>
     </header>

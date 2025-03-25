@@ -56,12 +56,6 @@ const Index = () => {
         {appView === 'learning' && (
           <LearningModules onLoadSampleProblem={handleLoadSampleProblem} />
         )}
-        
-        {appView === 'sample-problems' && (
-          <div className="flex justify-center items-center h-96">
-            <p className="text-lg text-center text-gray-500">Sample problem library coming soon!</p>
-          </div>
-        )}
       </main>
       
       <footer className="bg-white border-t border-gray-200 py-4 text-center text-sm text-gray-500">

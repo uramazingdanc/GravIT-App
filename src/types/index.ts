@@ -46,14 +46,5 @@ export interface LearningModule {
   duration?: string;
 }
 
-export interface SampleProblem {
-  id: string;
-  title: string;
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-  description: string;
-  parameters: DamParameters;
-  solution?: CalculationResults;
-}
-
 // App Navigation Types
-export type AppView = 'home' | 'calculator' | 'results' | 'learning' | 'sample-problems';
+export type AppView = 'home' | 'calculator' | 'results' | 'learning';
