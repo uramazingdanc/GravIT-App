@@ -105,7 +105,7 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
               <div>
                 <div className="flex justify-between mb-2">
                   <span className="text-sm font-medium text-gravit-darkBlue">
-                    Location of Resultant from Toe
+                    Location of Resultant from Heel
                   </span>
                   <span className="text-sm font-medium">
                     {results.locationOfRy > 0 && results.locationOfRy < params.dimensions.bottomWidth
@@ -135,9 +135,9 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                   ></div>
                 </div>
                 <div className="flex justify-between mt-1 text-xs text-gravit-darkBlue">
-                  <span>0</span>
+                  <span>Heel (0)</span>
                   <span>Middle Third</span>
-                  <span>{formatNumber(params.dimensions.bottomWidth)} {getUnitLabel('width', params.unitSystem)}</span>
+                  <span>Toe ({formatNumber(params.dimensions.bottomWidth)} {getUnitLabel('width', params.unitSystem)})</span>
                 </div>
                 <div className="mt-2 text-sm text-center font-medium">
                   {formatNumber(results.locationOfRy)} {getUnitLabel('width', params.unitSystem)}
@@ -256,13 +256,13 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                 <h4 className="text-sm font-medium text-gravit-darkBlue mb-2">Calculation Steps:</h4>
                 <div className="space-y-2 text-sm">
                   <div>
-                    <strong>Center of Gravity (from toe)</strong>
+                    <strong>Center of Gravity (from heel)</strong>
                     <div className="text-gravit-darkBlue/70 ml-4">
-                      = (Base² + Base×Top + Top²) / (3 × (Base + Top))
-                      = {formatNumber((params.dimensions.bottomWidth * params.dimensions.bottomWidth + 
+                      = (Top² + Base×Top + Base²) / (3 × (Top + Base))
+                      = {formatNumber((params.dimensions.topWidth * params.dimensions.topWidth + 
                           params.dimensions.topWidth * params.dimensions.bottomWidth + 
-                          params.dimensions.topWidth * params.dimensions.topWidth) / 
-                          (3 * (params.dimensions.bottomWidth + params.dimensions.topWidth)))} {getUnitLabel('length', params.unitSystem)}
+                          params.dimensions.bottomWidth * params.dimensions.bottomWidth) / 
+                          (3 * (params.dimensions.topWidth + params.dimensions.bottomWidth)))} {getUnitLabel('length', params.unitSystem)}
                     </div>
                   </div>
                   
@@ -270,10 +270,10 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                     <strong>Righting Moment</strong> = Self Weight × Center of Gravity
                     <div className="text-gravit-darkBlue/70 ml-4">
                       = {formatNumber(results.selfWeight)} {getUnitLabel('selfWeight', params.unitSystem)} × 
-                      {formatNumber((params.dimensions.bottomWidth * params.dimensions.bottomWidth + 
+                      {formatNumber((params.dimensions.topWidth * params.dimensions.topWidth + 
                         params.dimensions.topWidth * params.dimensions.bottomWidth + 
-                        params.dimensions.topWidth * params.dimensions.topWidth) / 
-                        (3 * (params.dimensions.bottomWidth + params.dimensions.topWidth)))} {getUnitLabel('length', params.unitSystem)}
+                        params.dimensions.bottomWidth * params.dimensions.bottomWidth) / 
+                        (3 * (params.dimensions.topWidth + params.dimensions.bottomWidth)))} {getUnitLabel('length', params.unitSystem)}
                       = {formatNumber(results.rightingMoment)} {getUnitLabel('rightingMoment', params.unitSystem)}
                     </div>
                   </div>
@@ -330,7 +330,7 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                 </div>
                 
                 <div className="card p-4 bg-gravit-gray/30 col-span-2">
-                  <div className="text-sm font-medium text-gravit-darkBlue">Location of Ry (from toe)</div>
+                  <div className="text-sm font-medium text-gravit-darkBlue">Location of Ry (from heel)</div>
                   <div className="text-xl font-bold text-gravit-blue mt-1">
                     {formatNumber(results.locationOfRy)} {getUnitLabel('locationOfRy', params.unitSystem)}
                   </div>
@@ -360,7 +360,7 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                   </div>
                   
                   <div>
-                    <strong>Location of Ry (from toe)</strong> = (Righting Moment - Overturning Moment) / Vertical Reaction
+                    <strong>Location of Ry (from heel)</strong> = (Righting Moment - Overturning Moment) / Vertical Reaction
                     <div className="text-gravit-darkBlue/70 ml-4">
                       = ({formatNumber(results.rightingMoment)} - {formatNumber(results.overturningMoment)}) {getUnitLabel('moment', params.unitSystem)} / 
                       {formatNumber(results.verticalReaction)} {getUnitLabel('verticalReaction', params.unitSystem)}

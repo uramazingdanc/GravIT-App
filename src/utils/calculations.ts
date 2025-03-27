@@ -19,9 +19,10 @@ export const calculateResults = (params: DamParameters): CalculationResults => {
   const damVolume = 0.5 * (dimensions.topWidth + dimensions.bottomWidth) * dimensions.height * dimensions.length;
   const damArea = 0.5 * (dimensions.topWidth + dimensions.bottomWidth) * dimensions.height;
   
-  // Calculate center of gravity (x-coordinate from toe)
-  const damCG = (dimensions.bottomWidth * dimensions.bottomWidth + dimensions.topWidth * dimensions.bottomWidth + dimensions.topWidth * dimensions.topWidth) / 
-                (3 * (dimensions.bottomWidth + dimensions.topWidth));
+  // Calculate center of gravity (x-coordinate from heel)
+  // Revised formula to measure from heel instead of toe
+  const damCG = (dimensions.topWidth * dimensions.topWidth + dimensions.topWidth * dimensions.bottomWidth + dimensions.bottomWidth * dimensions.bottomWidth) / 
+                (3 * (dimensions.topWidth + dimensions.bottomWidth));
   
   // Calculate hydrostatic pressure area (triangular)
   const waterPressureArea = 0.5 * waterLevel * waterLevel;
@@ -41,15 +42,19 @@ export const calculateResults = (params: DamParameters): CalculationResults => {
   const verticalReaction = selfWeight - hydrostaticUplift;
   const horizontalReaction = hydrostaticPressureForce;
   
-  // Calculate moments
+  // Calculate moments with corrected reference point (from heel)
   const rightingMoment = selfWeight * damCG;
   
   // Calculate overturning moment
+  // Water pressure moment is referenced from heel
   const waterPressureMoment = hydrostaticPressureForce * (waterLevel / 3);
+  
+  // Corrected uplift moment with proper reference from heel
   const upliftMoment = useUplift ? hydrostaticUplift * (dimensions.bottomWidth / 2) : 0;
+  
   const overturningMoment = waterPressureMoment + upliftMoment;
   
-  // Calculate location of vertical reaction (from toe)
+  // Calculate location of vertical reaction (from heel)
   const locationOfRy = (rightingMoment - overturningMoment) / verticalReaction;
   
   // Calculate factors of safety

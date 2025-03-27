@@ -29,7 +29,7 @@ const DamVisualization: React.FC<DamVisualizationProps> = ({ params, results }) 
     const scaleY = (canvas.height - 2 * margin) / maxHeight;
     const scale = Math.min(scaleX, scaleY);
     
-    // Origin position (bottom left of the dam)
+    // Origin position (bottom left of the dam - now representing heel)
     const originX = margin;
     const originY = canvas.height - margin;
     
@@ -59,20 +59,20 @@ const DamVisualization: React.FC<DamVisualizationProps> = ({ params, results }) 
     ctx.strokeStyle = '#37474F';
     ctx.lineWidth = 2;
     
-    // Dam shape
+    // Dam shape - adjusted with heel at originX
     switch (params.shape) {
       case 'triangular':
         // Triangular/trapezoidal shape
-        ctx.moveTo(originX, originY); // Bottom left
-        ctx.lineTo(originX + damBottomWidth, originY); // Bottom right
+        ctx.moveTo(originX, originY); // Heel (bottom left)
+        ctx.lineTo(originX + damBottomWidth, originY); // Toe (bottom right)
         ctx.lineTo(originX + damBottomWidth - (damBottomWidth - damTopWidth) / 2, originY - damHeight); // Top right
         ctx.lineTo(originX + (damBottomWidth - damTopWidth) / 2, originY - damHeight); // Top left
         break;
         
       case 'rectangular':
         // Rectangular shape
-        ctx.moveTo(originX, originY); // Bottom left
-        ctx.lineTo(originX + damBottomWidth, originY); // Bottom right
+        ctx.moveTo(originX, originY); // Heel (bottom left)
+        ctx.lineTo(originX + damBottomWidth, originY); // Toe (bottom right)
         ctx.lineTo(originX + damBottomWidth, originY - damHeight); // Top right
         ctx.lineTo(originX, originY - damHeight); // Top left
         break;
@@ -83,8 +83,8 @@ const DamVisualization: React.FC<DamVisualizationProps> = ({ params, results }) 
         const stepHeight = damHeight / stepCount;
         const stepWidth = (damBottomWidth - damTopWidth) / stepCount;
         
-        ctx.moveTo(originX, originY); // Bottom left
-        ctx.lineTo(originX + damBottomWidth, originY); // Bottom right
+        ctx.moveTo(originX, originY); // Heel (bottom left)
+        ctx.lineTo(originX + damBottomWidth, originY); // Toe (bottom right)
         
         // Draw steps
         for (let i = 0; i < stepCount; i++) {
@@ -103,8 +103,8 @@ const DamVisualization: React.FC<DamVisualizationProps> = ({ params, results }) 
         
       case 'curved':
         // Curved shape (with arch-like top)
-        ctx.moveTo(originX, originY); // Bottom left
-        ctx.lineTo(originX + damBottomWidth, originY); // Bottom right
+        ctx.moveTo(originX, originY); // Heel (bottom left)
+        ctx.lineTo(originX + damBottomWidth, originY); // Toe (bottom right)
         
         // Create curved top
         const centerX = originX + damBottomWidth / 2;
@@ -130,8 +130,8 @@ const DamVisualization: React.FC<DamVisualizationProps> = ({ params, results }) 
         
       default:
         // Default to triangular
-        ctx.moveTo(originX, originY); // Bottom left
-        ctx.lineTo(originX + damBottomWidth, originY); // Bottom right
+        ctx.moveTo(originX, originY); // Heel (bottom left)
+        ctx.lineTo(originX + damBottomWidth, originY); // Toe (bottom right)
         ctx.lineTo(originX + damBottomWidth - (damBottomWidth - damTopWidth) / 2, originY - damHeight); // Top right
         ctx.lineTo(originX + (damBottomWidth - damTopWidth) / 2, originY - damHeight); // Top left
     }
@@ -332,6 +332,11 @@ const DamVisualization: React.FC<DamVisualizationProps> = ({ params, results }) 
     ctx.fillStyle = '#37474F';
     ctx.fillText(`Shape: ${params.shape.charAt(0).toUpperCase() + params.shape.slice(1)}`, 
                 10, 20);
+    
+    // Label heel and toe
+    ctx.fillStyle = '#5D4037';
+    ctx.fillText('Heel', originX - 15, originY + 15);
+    ctx.fillText('Toe', originX + damBottomWidth + 5, originY + 15);
     
   }, [params, results]);
   
