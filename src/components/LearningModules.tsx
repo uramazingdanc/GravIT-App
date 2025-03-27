@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { SampleProblem, DamParameters } from '@/types';
+import { DamParameters } from '@/types';
 import {
   Accordion,
   AccordionContent,
@@ -28,10 +28,19 @@ interface LearningModulesProps {
   onLoadSampleProblem: (params: DamParameters) => void;
 }
 
+// Create a local type for example problems
+interface ExampleProblem {
+  id: string;
+  title: string;
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  description: string;
+  parameters: DamParameters;
+}
+
 const LearningModules: React.FC<LearningModulesProps> = ({ onLoadSampleProblem }) => {
   const [activeTab, setActiveTab] = useState('theory');
   
-  const handleLoadProblem = (problem: SampleProblem) => {
+  const handleLoadProblem = (problem: ExampleProblem) => {
     onLoadSampleProblem(problem.parameters);
   };
   
