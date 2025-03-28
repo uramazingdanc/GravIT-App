@@ -43,33 +43,19 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
   const getCGExplanation = () => {
     const { shape } = params;
     
-    switch(shape) {
-      case "rectangular":
-        return (
-          <>= Base/2 = {formatNumber(bottomWidth / 2)} {getUnitLabel('length', params.unitSystem)}</>
-        );
-      case "triangular":
-        if (topWidth === 0) {
-          return (
-            <>= Base/3 = {formatNumber(bottomWidth / 3)} {getUnitLabel('length', params.unitSystem)}</>
-          );
-        }
-        // Fall through to trapezoidal calculation for non-zero top width
-      default:
-        return (
-          <>
-            = Base - (Base² + Base×Top + Top²) / (3 × (Base + Top))
-            = {formatNumber(bottomWidth)} - ({formatNumber(bottomWidth * bottomWidth + 
-                bottomWidth * topWidth + 
-                topWidth * topWidth)} / {formatNumber(3 * (topWidth + bottomWidth))})
-            = {formatNumber(bottomWidth - 
-                ((bottomWidth * bottomWidth + 
-                  topWidth * bottomWidth + 
-                  topWidth * topWidth) / 
-                (3 * (topWidth + bottomWidth))))} {getUnitLabel('length', params.unitSystem)}
-          </>
-        );
-    }
+    return (
+      <>
+        = Base - (Base² + Base×Top + Top²) / (3 × (Base + Top))
+        = {formatNumber(bottomWidth)} - ({formatNumber(bottomWidth * bottomWidth + 
+            bottomWidth * topWidth + 
+            topWidth * topWidth)} / {formatNumber(3 * (bottomWidth + topWidth))})
+        = {formatNumber(bottomWidth - 
+            ((bottomWidth * bottomWidth + 
+              bottomWidth * topWidth + 
+              topWidth * topWidth) / 
+            (3 * (bottomWidth + topWidth))))} {getUnitLabel('length', params.unitSystem)}
+      </>
+    );
   };
 
   return (
@@ -302,9 +288,9 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                       = {formatNumber(results.selfWeight)} {getUnitLabel('selfWeight', params.unitSystem)} × 
                       {formatNumber(bottomWidth - 
                         ((bottomWidth * bottomWidth + 
-                          topWidth * bottomWidth + 
+                          bottomWidth * topWidth + 
                           topWidth * topWidth) / 
-                        (3 * (topWidth + bottomWidth))))} {getUnitLabel('length', params.unitSystem)}
+                        (3 * (bottomWidth + topWidth))))} {getUnitLabel('length', params.unitSystem)}
                       = {formatNumber(results.rightingMoment)} {getUnitLabel('rightingMoment', params.unitSystem)}
                     </div>
                   </div>

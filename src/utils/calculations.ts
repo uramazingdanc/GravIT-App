@@ -1,4 +1,3 @@
-
 import { DamParameters, CalculationResults } from "../types";
 
 export const calculateResults = (params: DamParameters): CalculationResults => {
@@ -24,55 +23,13 @@ export const calculateResults = (params: DamParameters): CalculationResults => {
   // Calculate hydrostatic pressure force
   const hydrostaticPressureForce = 0.5 * waterUnitWeight * waterLevel * waterLevel * dimensions.length;
   
-  // Center of gravity calculation from heel using the correct formula
-  let cgFromHeel;
-  
-  switch(params.shape) {
-    case "rectangular":
-      cgFromHeel = dimensions.bottomWidth / 2;
-      break;
-    
-    case "triangular":
-      // For a triangular dam, CG is at 1/3 of the base from the heel
-      if (dimensions.topWidth === 0) {
-        cgFromHeel = dimensions.bottomWidth / 3;
-      } else {
-        // For a trapezoidal dam (triangular with top width > 0)
-        // Updated formula: CG = Base - (Base² + Base×Top + Top²) / (3 × (Base + Top))
-        cgFromHeel = dimensions.bottomWidth - 
+  // Center of gravity calculation from heel using the universal formula for all shapes
+  // Formula: CG = Base - (Base² + Base×Top + Top²) / (3 × (Base + Top))
+  const cgFromHeel = dimensions.bottomWidth - 
                     ((dimensions.bottomWidth * dimensions.bottomWidth + 
                       dimensions.bottomWidth * dimensions.topWidth + 
                       dimensions.topWidth * dimensions.topWidth) / 
                      (3 * (dimensions.bottomWidth + dimensions.topWidth)));
-      }
-      break;
-    
-    case "stepped":
-      // Approximate as trapezoidal for CG calculation
-      cgFromHeel = dimensions.bottomWidth - 
-                  ((dimensions.bottomWidth * dimensions.bottomWidth + 
-                    dimensions.bottomWidth * dimensions.topWidth + 
-                    dimensions.topWidth * dimensions.topWidth) / 
-                   (3 * (dimensions.bottomWidth + dimensions.topWidth)));
-      break;
-      
-    case "curved":
-      // Approximate as trapezoidal for CG calculation
-      cgFromHeel = dimensions.bottomWidth - 
-                  ((dimensions.bottomWidth * dimensions.bottomWidth + 
-                    dimensions.bottomWidth * dimensions.topWidth + 
-                    dimensions.topWidth * dimensions.topWidth) / 
-                   (3 * (dimensions.bottomWidth + dimensions.topWidth)));
-      break;
-      
-    default:
-      // Default to trapezoidal formula with the correct calculation
-      cgFromHeel = dimensions.bottomWidth - 
-                  ((dimensions.bottomWidth * dimensions.bottomWidth + 
-                    dimensions.bottomWidth * dimensions.topWidth + 
-                    dimensions.topWidth * dimensions.topWidth) / 
-                   (3 * (dimensions.bottomWidth + dimensions.topWidth)));
-  }
   
   // Calculate hydrostatic uplift if applicable
   let hydrostaticUplift = 0;
