@@ -118,32 +118,28 @@ export const getUnitLabel = (property: string, unitSystem: 'SI' | 'English'): st
 };
 
 // Helper function to get CG explanation based on dam shape
-export const getCGExplanation = (shape: string, bottomWidth: number, topWidth: number, unitSystem: 'SI' | 'English'): React.ReactNode => {
-  // Universal formula for all shapes
-  const explanation = (
-    <>
-      = Base - (Base² + Base×Top + Top²) / (3 × (Base + Top))
-      = {formatNumber(bottomWidth)} - ({formatNumber(bottomWidth * bottomWidth + 
+// Returns an array of strings that can be mapped to JSX elements in the React component
+export const getCGExplanationLines = (shape: string, bottomWidth: number, topWidth: number, unitSystem: 'SI' | 'English'): string[] => {
+  // Universal formula explanation lines
+  const formulaLines = [
+    `= Base - (Base² + Base×Top + Top²) / (3 × (Base + Top))`,
+    `= ${formatNumber(bottomWidth)} - (${formatNumber(bottomWidth * bottomWidth + 
+        bottomWidth * topWidth + 
+        topWidth * topWidth)} / ${formatNumber(3 * (bottomWidth + topWidth))})`,
+    `= ${formatNumber(bottomWidth - 
+        ((bottomWidth * bottomWidth + 
           bottomWidth * topWidth + 
-          topWidth * topWidth)} / {formatNumber(3 * (bottomWidth + topWidth))})
-      = {formatNumber(bottomWidth - 
-          ((bottomWidth * bottomWidth + 
-            bottomWidth * topWidth + 
-            topWidth * topWidth) / 
-           (3 * (bottomWidth + topWidth))))} {getUnitLabel('length', unitSystem)}
-    </>
-  );
+          topWidth * topWidth) / 
+         (3 * (bottomWidth + topWidth))))} ${getUnitLabel('length', unitSystem)}`
+  ];
 
-  // For rectangular shape, we can add a note that it simplifies to Base/2
+  // For rectangular shape, add a note that it simplifies to Base/2
   if (shape === 'rectangular' && bottomWidth === topWidth) {
-    return (
-      <>
-        {explanation}
-        <br />
-        <span className="text-xs mt-1">(For rectangular shape where Base = Top, this simplifies to Base/2 = {formatNumber(bottomWidth/2)} {getUnitLabel('length', unitSystem)})</span>
-      </>
-    );
+    return [
+      ...formulaLines,
+      `For rectangular shape where Base = Top, this simplifies to Base/2 = ${formatNumber(bottomWidth/2)} ${getUnitLabel('length', unitSystem)}`
+    ];
   }
 
-  return explanation;
+  return formulaLines;
 };

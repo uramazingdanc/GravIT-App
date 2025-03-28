@@ -1,6 +1,6 @@
 import React from 'react';
 import { DamParameters, CalculationResults } from '@/types';
-import { formatNumber, getUnitLabel, getCGExplanation } from '@/utils/calculations';
+import { formatNumber, getUnitLabel, getCGExplanationLines } from '@/utils/calculations';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { ArrowUp, Check, ArrowDown } from 'lucide-react';
@@ -38,6 +38,22 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
 
   const getProgressValue = (value: number, maxValue: number) => {
     return Math.min(100, (value / maxValue) * 100);
+  };
+
+  // Get CG explanation lines and render them
+  const renderCGExplanation = () => {
+    const explanationLines = getCGExplanationLines(params.shape, bottomWidth, topWidth, params.unitSystem);
+    
+    return (
+      <>
+        {explanationLines.map((line, index) => (
+          <React.Fragment key={index}>
+            {index > 0 && <br />}
+            {line}
+          </React.Fragment>
+        ))}
+      </>
+    );
   };
 
   return (
@@ -260,7 +276,7 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                   <div>
                     <strong>Center of Gravity (from heel)</strong>
                     <div className="text-gravit-darkBlue/70 ml-4">
-                      {getCGExplanation(params.shape, bottomWidth, topWidth, params.unitSystem)}
+                      {renderCGExplanation()}
                     </div>
                   </div>
                   
