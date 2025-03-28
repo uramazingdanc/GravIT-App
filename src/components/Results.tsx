@@ -1,6 +1,6 @@
 import React from 'react';
 import { DamParameters, CalculationResults } from '@/types';
-import { formatNumber, getUnitLabel } from '@/utils/calculations';
+import { formatNumber, getUnitLabel, getCGExplanation } from '@/utils/calculations';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { ArrowUp, Check, ArrowDown } from 'lucide-react';
@@ -38,24 +38,6 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
 
   const getProgressValue = (value: number, maxValue: number) => {
     return Math.min(100, (value / maxValue) * 100);
-  };
-
-  const getCGExplanation = () => {
-    const { shape } = params;
-    
-    return (
-      <>
-        = Base - (Base² + Base×Top + Top²) / (3 × (Base + Top))
-        = {formatNumber(bottomWidth)} - ({formatNumber(bottomWidth * bottomWidth + 
-            bottomWidth * topWidth + 
-            topWidth * topWidth)} / {formatNumber(3 * (bottomWidth + topWidth))})
-        = {formatNumber(bottomWidth - 
-            ((bottomWidth * bottomWidth + 
-              bottomWidth * topWidth + 
-              topWidth * topWidth) / 
-            (3 * (bottomWidth + topWidth))))} {getUnitLabel('length', params.unitSystem)}
-      </>
-    );
   };
 
   return (
@@ -278,7 +260,7 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                   <div>
                     <strong>Center of Gravity (from heel)</strong>
                     <div className="text-gravit-darkBlue/70 ml-4">
-                      {getCGExplanation()}
+                      {getCGExplanation(params.shape, bottomWidth, topWidth, params.unitSystem)}
                     </div>
                   </div>
                   
