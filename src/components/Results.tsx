@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { DamParameters, CalculationResults } from '@/types';
 import { formatNumber, getUnitLabel } from '@/utils/calculations';
@@ -36,6 +35,39 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
 
   const getProgressValue = (value: number, maxValue: number) => {
     return Math.min(100, (value / maxValue) * 100);
+  };
+
+  const getCGExplanation = () => {
+    const { shape, dimensions } = params;
+    const { topWidth, bottomWidth } = dimensions;
+    
+    switch(shape) {
+      case "rectangular":
+        return (
+          <>= Base/2 = {formatNumber(bottomWidth / 2)} {getUnitLabel('length', params.unitSystem)}</>
+        );
+      case "triangular":
+        if (topWidth === 0) {
+          return (
+            <>= Base/3 = {formatNumber(bottomWidth / 3)} {getUnitLabel('length', params.unitSystem)}</>
+          );
+        }
+        // Fall through to trapezoidal calculation for non-zero top width
+      default:
+        return (
+          <>
+            = Base - (Base² + Base×Top + Top²) / (3 × (Base + Top))
+            = {formatNumber(bottomWidth)} - ({formatNumber(bottomWidth * bottomWidth + 
+                bottomWidth * topWidth + 
+                topWidth * topWidth)} / {formatNumber(3 * (topWidth + bottomWidth))})
+            = {formatNumber(bottomWidth - 
+                ((bottomWidth * bottomWidth + 
+                  topWidth * bottomWidth + 
+                  topWidth * topWidth) / 
+                (3 * (topWidth + bottomWidth))))} {getUnitLabel('length', params.unitSystem)}
+          </>
+        );
+    }
   };
 
   return (
@@ -258,17 +290,7 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                   <div>
                     <strong>Center of Gravity (from heel)</strong>
                     <div className="text-gravit-darkBlue/70 ml-4">
-                      {params.shape === "triangular" && params.dimensions.topWidth === 0 ? (
-                        <>= Base/3 = {formatNumber(params.dimensions.bottomWidth / 3)} {getUnitLabel('length', params.unitSystem)}</>
-                      ) : (
-                        <>
-                          = (Base² + Base×Top + Top²) / (3 × (Base + Top))
-                          = {formatNumber((params.dimensions.bottomWidth * params.dimensions.bottomWidth + 
-                              params.dimensions.topWidth * params.dimensions.bottomWidth + 
-                              params.dimensions.topWidth * params.dimensions.topWidth) / 
-                              (3 * (params.dimensions.topWidth + params.dimensions.bottomWidth)))} {getUnitLabel('length', params.unitSystem)}
-                        </>
-                      )}
+                      {getCGExplanation()}
                     </div>
                   </div>
                   
@@ -276,10 +298,11 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                     <strong>Righting Moment</strong> = Self Weight × Center of Gravity (from heel)
                     <div className="text-gravit-darkBlue/70 ml-4">
                       = {formatNumber(results.selfWeight)} {getUnitLabel('selfWeight', params.unitSystem)} × 
-                      {formatNumber((params.dimensions.bottomWidth * params.dimensions.bottomWidth + 
-                        params.dimensions.topWidth * params.dimensions.bottomWidth + 
-                        params.dimensions.topWidth * params.dimensions.topWidth) / 
-                        (3 * (params.dimensions.topWidth + params.dimensions.bottomWidth)))} {getUnitLabel('length', params.unitSystem)}
+                      {formatNumber(bottomWidth - 
+                        ((bottomWidth * bottomWidth + 
+                          topWidth * bottomWidth + 
+                          topWidth * topWidth) / 
+                        (3 * (topWidth + bottomWidth))))} {getUnitLabel('length', params.unitSystem)}
                       = {formatNumber(results.rightingMoment)} {getUnitLabel('rightingMoment', params.unitSystem)}
                     </div>
                   </div>
@@ -299,7 +322,8 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                       <div className="text-gravit-darkBlue/70 ml-4">
                         = {formatNumber(results.hydrostaticUplift)} {getUnitLabel('hydrostaticUplift', params.unitSystem)} × 
                         Centroid {getUnitLabel('length', params.unitSystem)}
-                        = Computed based on trapezoidal pressure distribution from heel to toe
+                        = Computed based on trapezoidal pressure distribution with centroid at:
+                        Base × (Heel Pressure + 2 × Toe Pressure) / (3 × (Heel Pressure + Toe Pressure))
                       </div>
                     </div>
                   )}
