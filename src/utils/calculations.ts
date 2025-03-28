@@ -24,7 +24,7 @@ export const calculateResults = (params: DamParameters): CalculationResults => {
   // Calculate hydrostatic pressure force
   const hydrostaticPressureForce = 0.5 * waterUnitWeight * waterLevel * waterLevel * dimensions.length;
   
-  // Center of gravity calculation from heel
+  // Center of gravity calculation from heel using the correct formula
   let cgFromHeel;
   
   switch(params.shape) {
@@ -38,27 +38,40 @@ export const calculateResults = (params: DamParameters): CalculationResults => {
         cgFromHeel = dimensions.bottomWidth / 3;
       } else {
         // For a trapezoidal dam (triangular with top width > 0)
-        cgFromHeel = (dimensions.bottomWidth * dimensions.bottomWidth + dimensions.bottomWidth * dimensions.topWidth + dimensions.topWidth * dimensions.topWidth) / 
-                     (3 * (dimensions.bottomWidth + dimensions.topWidth));
+        // Updated formula: CG = Base - (Base² + Base×Top + Top²) / (3 × (Base + Top))
+        cgFromHeel = dimensions.bottomWidth - 
+                    ((dimensions.bottomWidth * dimensions.bottomWidth + 
+                      dimensions.bottomWidth * dimensions.topWidth + 
+                      dimensions.topWidth * dimensions.topWidth) / 
+                     (3 * (dimensions.bottomWidth + dimensions.topWidth)));
       }
       break;
     
     case "stepped":
       // Approximate as trapezoidal for CG calculation
-      cgFromHeel = (dimensions.bottomWidth * dimensions.bottomWidth + dimensions.bottomWidth * dimensions.topWidth + dimensions.topWidth * dimensions.topWidth) / 
-                   (3 * (dimensions.bottomWidth + dimensions.topWidth));
+      cgFromHeel = dimensions.bottomWidth - 
+                  ((dimensions.bottomWidth * dimensions.bottomWidth + 
+                    dimensions.bottomWidth * dimensions.topWidth + 
+                    dimensions.topWidth * dimensions.topWidth) / 
+                   (3 * (dimensions.bottomWidth + dimensions.topWidth)));
       break;
       
     case "curved":
       // Approximate as trapezoidal for CG calculation
-      cgFromHeel = (dimensions.bottomWidth * dimensions.bottomWidth + dimensions.bottomWidth * dimensions.topWidth + dimensions.topWidth * dimensions.topWidth) / 
-                   (3 * (dimensions.bottomWidth + dimensions.topWidth));
+      cgFromHeel = dimensions.bottomWidth - 
+                  ((dimensions.bottomWidth * dimensions.bottomWidth + 
+                    dimensions.bottomWidth * dimensions.topWidth + 
+                    dimensions.topWidth * dimensions.topWidth) / 
+                   (3 * (dimensions.bottomWidth + dimensions.topWidth)));
       break;
       
     default:
-      // Default to trapezoidal formula
-      cgFromHeel = (dimensions.bottomWidth * dimensions.bottomWidth + dimensions.bottomWidth * dimensions.topWidth + dimensions.topWidth * dimensions.topWidth) / 
-                   (3 * (dimensions.bottomWidth + dimensions.topWidth));
+      // Default to trapezoidal formula with the correct calculation
+      cgFromHeel = dimensions.bottomWidth - 
+                  ((dimensions.bottomWidth * dimensions.bottomWidth + 
+                    dimensions.bottomWidth * dimensions.topWidth + 
+                    dimensions.topWidth * dimensions.topWidth) / 
+                   (3 * (dimensions.bottomWidth + dimensions.topWidth)));
   }
   
   // Calculate hydrostatic uplift if applicable
@@ -71,7 +84,7 @@ export const calculateResults = (params: DamParameters): CalculationResults => {
     hydrostaticUplift = waterUnitWeight * upliftArea * dimensions.length;
     
     // Calculate centroid of uplift pressure (from heel)
-    const upliftCentroid = dimensions.bottomWidth * (2 * upliftAtHeel + upliftAtToe) / (3 * (upliftAtHeel + upliftAtToe));
+    const upliftCentroid = dimensions.bottomWidth * (upliftAtHeel + 2 * upliftAtToe) / (3 * (upliftAtHeel + upliftAtToe));
     
     // Calculate uplift moment
     upliftMoment = hydrostaticUplift * upliftCentroid;
