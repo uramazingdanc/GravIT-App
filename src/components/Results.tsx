@@ -14,6 +14,9 @@ interface ResultsProps {
 }
 
 const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }) => {
+  // Extract dimension values early for use throughout the component
+  const { topWidth, bottomWidth } = params.dimensions;
+  
   const getSafetyIndicator = (value: number, threshold: number) => {
     if (value >= threshold * 1.5) {
       return <div className="flex items-center text-green-600"><Check size={16} className="mr-1" /> Excellent</div>;
@@ -38,8 +41,7 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
   };
 
   const getCGExplanation = () => {
-    const { shape, dimensions } = params;
-    const { topWidth, bottomWidth } = dimensions;
+    const { shape } = params;
     
     switch(shape) {
       case "rectangular":
