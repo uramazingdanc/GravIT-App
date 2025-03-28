@@ -258,21 +258,27 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                   <div>
                     <strong>Center of Gravity (from heel)</strong>
                     <div className="text-gravit-darkBlue/70 ml-4">
-                      = (Top² + Base×Top + Base²) / (3 × (Top + Base))
-                      = {formatNumber((params.dimensions.topWidth * params.dimensions.topWidth + 
-                          params.dimensions.topWidth * params.dimensions.bottomWidth + 
-                          params.dimensions.bottomWidth * params.dimensions.bottomWidth) / 
-                          (3 * (params.dimensions.topWidth + params.dimensions.bottomWidth)))} {getUnitLabel('length', params.unitSystem)}
+                      {params.shape === "triangular" && params.dimensions.topWidth === 0 ? (
+                        <>= Base/3 = {formatNumber(params.dimensions.bottomWidth / 3)} {getUnitLabel('length', params.unitSystem)}</>
+                      ) : (
+                        <>
+                          = (Base² + Base×Top + Top²) / (3 × (Base + Top))
+                          = {formatNumber((params.dimensions.bottomWidth * params.dimensions.bottomWidth + 
+                              params.dimensions.topWidth * params.dimensions.bottomWidth + 
+                              params.dimensions.topWidth * params.dimensions.topWidth) / 
+                              (3 * (params.dimensions.topWidth + params.dimensions.bottomWidth)))} {getUnitLabel('length', params.unitSystem)}
+                        </>
+                      )}
                     </div>
                   </div>
                   
                   <div>
-                    <strong>Righting Moment</strong> = Self Weight × Center of Gravity
+                    <strong>Righting Moment</strong> = Self Weight × Center of Gravity (from heel)
                     <div className="text-gravit-darkBlue/70 ml-4">
                       = {formatNumber(results.selfWeight)} {getUnitLabel('selfWeight', params.unitSystem)} × 
-                      {formatNumber((params.dimensions.topWidth * params.dimensions.topWidth + 
+                      {formatNumber((params.dimensions.bottomWidth * params.dimensions.bottomWidth + 
                         params.dimensions.topWidth * params.dimensions.bottomWidth + 
-                        params.dimensions.bottomWidth * params.dimensions.bottomWidth) / 
+                        params.dimensions.topWidth * params.dimensions.topWidth) / 
                         (3 * (params.dimensions.topWidth + params.dimensions.bottomWidth)))} {getUnitLabel('length', params.unitSystem)}
                       = {formatNumber(results.rightingMoment)} {getUnitLabel('rightingMoment', params.unitSystem)}
                     </div>
@@ -289,11 +295,11 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                   
                   {params.useUplift && results.hydrostaticUplift !== undefined && (
                     <div>
-                      <strong>Uplift Moment</strong> = Hydrostatic Uplift × (Base Width / 2)
+                      <strong>Uplift Moment (from heel)</strong> = Hydrostatic Uplift × Uplift Centroid
                       <div className="text-gravit-darkBlue/70 ml-4">
                         = {formatNumber(results.hydrostaticUplift)} {getUnitLabel('hydrostaticUplift', params.unitSystem)} × 
-                        ({params.dimensions.bottomWidth} / 2) {getUnitLabel('length', params.unitSystem)}
-                        = {formatNumber(results.hydrostaticUplift * params.dimensions.bottomWidth / 2)} {getUnitLabel('rightingMoment', params.unitSystem)}
+                        Centroid {getUnitLabel('length', params.unitSystem)}
+                        = Computed based on trapezoidal pressure distribution from heel to toe
                       </div>
                     </div>
                   )}
@@ -303,7 +309,7 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                     <div className="text-gravit-darkBlue/70 ml-4">
                       = {formatNumber(results.hydrostaticPressureForce * params.waterLevel / 3)} {getUnitLabel('rightingMoment', params.unitSystem)} + 
                       {params.useUplift && results.hydrostaticUplift !== undefined 
-                        ? `${formatNumber(results.hydrostaticUplift * params.dimensions.bottomWidth / 2)} ${getUnitLabel('rightingMoment', params.unitSystem)}`
+                        ? " Uplift Moment"
                         : '0'
                       }
                       = {formatNumber(results.overturningMoment)} {getUnitLabel('overturningMoment', params.unitSystem)}

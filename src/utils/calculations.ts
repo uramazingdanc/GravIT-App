@@ -17,56 +17,87 @@ export const calculateResults = (params: DamParameters): CalculationResults => {
 
   // Calculate volume and areas
   const damVolume = 0.5 * (dimensions.topWidth + dimensions.bottomWidth) * dimensions.height * dimensions.length;
-  const damArea = 0.5 * (dimensions.topWidth + dimensions.bottomWidth) * dimensions.height;
   
-  // Calculate center of gravity (x-coordinate from heel)
-  // Revised formula to measure from heel instead of toe
-  const damCG = (dimensions.topWidth * dimensions.topWidth + dimensions.topWidth * dimensions.bottomWidth + dimensions.bottomWidth * dimensions.bottomWidth) / 
-                (3 * (dimensions.topWidth + dimensions.bottomWidth));
-  
-  // Calculate hydrostatic pressure area (triangular)
-  const waterPressureArea = 0.5 * waterLevel * waterLevel;
-  
-  // Calculate forces
-  const selfWeight = concreteUnitWeight * damVolume;
-  
-  // Calculate hydrostatic uplift if enabled
-  const hydrostaticUplift = useUplift 
-    ? waterUnitWeight * 0.5 * (upliftAtHeel + upliftAtToe) * dimensions.bottomWidth * dimensions.length
-    : 0;
+  // Calculate self-weight
+  const selfWeight = damVolume * concreteUnitWeight;
   
   // Calculate hydrostatic pressure force
-  const hydrostaticPressureForce = waterUnitWeight * waterPressureArea * dimensions.length;
+  const hydrostaticPressureForce = 0.5 * waterUnitWeight * waterLevel * waterLevel * dimensions.length;
   
-  // Calculate reactions
-  const verticalReaction = selfWeight - hydrostaticUplift;
+  // Center of gravity calculation from heel
+  let cgFromHeel;
+  
+  switch(params.shape) {
+    case "rectangular":
+      cgFromHeel = dimensions.bottomWidth / 2;
+      break;
+    
+    case "triangular":
+      // For a triangular dam, CG is at 1/3 of the base from the heel
+      if (dimensions.topWidth === 0) {
+        cgFromHeel = dimensions.bottomWidth / 3;
+      } else {
+        // For a trapezoidal dam (triangular with top width > 0)
+        cgFromHeel = (dimensions.bottomWidth * dimensions.bottomWidth + dimensions.bottomWidth * dimensions.topWidth + dimensions.topWidth * dimensions.topWidth) / 
+                     (3 * (dimensions.bottomWidth + dimensions.topWidth));
+      }
+      break;
+    
+    case "stepped":
+      // Approximate as trapezoidal for CG calculation
+      cgFromHeel = (dimensions.bottomWidth * dimensions.bottomWidth + dimensions.bottomWidth * dimensions.topWidth + dimensions.topWidth * dimensions.topWidth) / 
+                   (3 * (dimensions.bottomWidth + dimensions.topWidth));
+      break;
+      
+    case "curved":
+      // Approximate as trapezoidal for CG calculation
+      cgFromHeel = (dimensions.bottomWidth * dimensions.bottomWidth + dimensions.bottomWidth * dimensions.topWidth + dimensions.topWidth * dimensions.topWidth) / 
+                   (3 * (dimensions.bottomWidth + dimensions.topWidth));
+      break;
+      
+    default:
+      // Default to trapezoidal formula
+      cgFromHeel = (dimensions.bottomWidth * dimensions.bottomWidth + dimensions.bottomWidth * dimensions.topWidth + dimensions.topWidth * dimensions.topWidth) / 
+                   (3 * (dimensions.bottomWidth + dimensions.topWidth));
+  }
+  
+  // Calculate hydrostatic uplift if applicable
+  let hydrostaticUplift = 0;
+  let upliftMoment = 0;
+  
+  if (useUplift) {
+    // Calculate trapezoidal uplift area
+    const upliftArea = 0.5 * (upliftAtHeel + upliftAtToe) * dimensions.bottomWidth;
+    hydrostaticUplift = waterUnitWeight * upliftArea * dimensions.length;
+    
+    // Calculate centroid of uplift pressure (from heel)
+    const upliftCentroid = dimensions.bottomWidth * (2 * upliftAtHeel + upliftAtToe) / (3 * (upliftAtHeel + upliftAtToe));
+    
+    // Calculate uplift moment
+    upliftMoment = hydrostaticUplift * upliftCentroid;
+  }
+  
+  // Calculate moments
+  const rightingMoment = selfWeight * cgFromHeel;
+  const waterMoment = hydrostaticPressureForce * (waterLevel / 3);
+  const overturningMoment = waterMoment + upliftMoment;
+  
+  // Calculate vertical and horizontal reactions
+  const verticalReaction = selfWeight - (useUplift ? hydrostaticUplift : 0);
   const horizontalReaction = hydrostaticPressureForce;
   
-  // Calculate moments with corrected reference point (from heel)
-  const rightingMoment = selfWeight * damCG;
-  
-  // Calculate overturning moment
-  // Water pressure moment is referenced from heel
-  const waterPressureMoment = hydrostaticPressureForce * (waterLevel / 3);
-  
-  // Corrected uplift moment with proper reference from heel
-  const upliftMoment = useUplift ? hydrostaticUplift * (dimensions.bottomWidth / 2) : 0;
-  
-  const overturningMoment = waterPressureMoment + upliftMoment;
-  
-  // Calculate location of vertical reaction (from heel)
+  // Calculate location of resultant vertical force from heel
   const locationOfRy = (rightingMoment - overturningMoment) / verticalReaction;
   
   // Calculate factors of safety
   const factorOfSafetyAgainstSliding = (coefficientOfFriction * verticalReaction) / horizontalReaction;
   const factorOfSafetyAgainstOverturning = rightingMoment / overturningMoment;
   
-  // Check stability criteria
-  const isStable = 
-    factorOfSafetyAgainstSliding >= 1.5 && 
-    factorOfSafetyAgainstOverturning >= 1.5 && 
-    locationOfRy >= 0 && 
-    locationOfRy <= dimensions.bottomWidth;
+  // Check if the dam is stable
+  const isStable = factorOfSafetyAgainstSliding >= 1.5 && 
+                  factorOfSafetyAgainstOverturning >= 1.5 && 
+                  locationOfRy > 0 && 
+                  locationOfRy < dimensions.bottomWidth;
   
   return {
     selfWeight,
@@ -83,43 +114,31 @@ export const calculateResults = (params: DamParameters): CalculationResults => {
   };
 };
 
+// Utility function for formatting numbers in the UI
 export const formatNumber = (value: number): string => {
-  return value.toLocaleString(undefined, { 
-    minimumFractionDigits: 2, 
-    maximumFractionDigits: 2 
-  });
+  if (Math.abs(value) < 0.01) return "0";
+  return value.toFixed(2).replace(/\.00$/, '');
 };
 
-export const getUnitLabel = (parameter: string, unitSystem: 'SI' | 'English'): string => {
-  const units: Record<string, Record<'SI' | 'English', string>> = {
+// Utility function for getting unit labels
+export const getUnitLabel = (property: string, unitSystem: 'SI' | 'English'): string => {
+  const unitLabels: Record<string, Record<'SI' | 'English', string>> = {
+    width: { SI: 'm', English: 'ft' },
+    height: { SI: 'm', English: 'ft' },
     length: { SI: 'm', English: 'ft' },
-    force: { SI: 'kN', English: 'lbf' },
-    moment: { SI: 'kN·m', English: 'lbf·ft' },
-    pressure: { SI: 'kN/m²', English: 'lbf/ft²' },
-    unitWeight: { SI: 'kN/m³', English: 'lbf/ft³' },
     area: { SI: 'm²', English: 'ft²' },
     volume: { SI: 'm³', English: 'ft³' },
+    unitWeight: { SI: 'kN/m³', English: 'lbf/ft³' },
+    selfWeight: { SI: 'kN', English: 'lbf' },
+    hydrostaticPressureForce: { SI: 'kN', English: 'lbf' },
+    hydrostaticUplift: { SI: 'kN', English: 'lbf' },
+    verticalReaction: { SI: 'kN', English: 'lbf' },
+    horizontalReaction: { SI: 'kN', English: 'lbf' },
+    rightingMoment: { SI: 'kN·m', English: 'lbf·ft' },
+    overturningMoment: { SI: 'kN·m', English: 'lbf·ft' },
+    moment: { SI: 'kN·m', English: 'lbf·ft' },
+    locationOfRy: { SI: 'm', English: 'ft' },
   };
-
-  switch (parameter) {
-    case 'height':
-    case 'width':
-    case 'length':
-    case 'locationOfRy':
-      return units.length[unitSystem];
-    case 'selfWeight':
-    case 'hydrostaticUplift':
-    case 'hydrostaticPressureForce':
-    case 'verticalReaction':
-    case 'horizontalReaction':
-      return units.force[unitSystem];
-    case 'rightingMoment':
-    case 'overturningMoment':
-      return units.moment[unitSystem];
-    case 'concreteUnitWeight':
-    case 'waterUnitWeight':
-      return units.unitWeight[unitSystem];
-    default:
-      return '';
-  }
+  
+  return unitLabels[property]?.[unitSystem] || '';
 };
