@@ -1,6 +1,11 @@
 import React from 'react';
 import { DamParameters, CalculationResults } from '@/types';
-import { formatNumber, getUnitLabel, getCGExplanationLines } from '@/utils/calculations';
+import { 
+  formatNumber, 
+  getUnitLabel, 
+  getCGExplanationLines, 
+  getUpliftCentroidExplanation 
+} from '@/utils/calculations';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { ArrowUp, Check, ArrowDown } from 'lucide-react';
@@ -43,6 +48,22 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
   // Get CG explanation lines and render them
   const renderCGExplanation = () => {
     const explanationLines = getCGExplanationLines(params.shape, bottomWidth, topWidth, params.unitSystem);
+    
+    return (
+      <>
+        {explanationLines.map((line, index) => (
+          <React.Fragment key={index}>
+            {index > 0 && <br />}
+            {line}
+          </React.Fragment>
+        ))}
+      </>
+    );
+  };
+  
+  // Render the uplift centroid explanation
+  const renderUpliftCentroidExplanation = () => {
+    const explanationLines = getUpliftCentroidExplanation(bottomWidth, params.unitSystem);
     
     return (
       <>
@@ -307,9 +328,8 @@ const Results: React.FC<ResultsProps> = ({ params, results, onBackToCalculator }
                       <strong>Uplift Moment (from heel)</strong> = Hydrostatic Uplift × Uplift Centroid
                       <div className="text-gravit-darkBlue/70 ml-4">
                         = {formatNumber(results.hydrostaticUplift)} {getUnitLabel('hydrostaticUplift', params.unitSystem)} × 
-                        Centroid {getUnitLabel('length', params.unitSystem)}
-                        = Computed based on trapezoidal pressure distribution with centroid at:
-                        Base × (Heel Pressure + 2 × Toe Pressure) / (3 × (Heel Pressure + Toe Pressure))
+                        {renderUpliftCentroidExplanation()}
+                        = {formatNumber(results.hydrostaticUplift * (2/3) * bottomWidth)} {getUnitLabel('moment', params.unitSystem)}
                       </div>
                     </div>
                   )}

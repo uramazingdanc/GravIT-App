@@ -45,7 +45,8 @@ export const calculateResults = (params: DamParameters): CalculationResults => {
     hydrostaticUplift = waterUnitWeight * upliftArea * dimensions.length;
     
     // Calculate centroid of uplift pressure (from heel)
-    const upliftCentroid = dimensions.bottomWidth * (upliftAtHeel + 2 * upliftAtToe) / (3 * (upliftAtHeel + upliftAtToe));
+    // Using the simplified formula: 2/3 × Base
+    const upliftCentroid = (2/3) * dimensions.bottomWidth;
     
     // Calculate uplift moment
     upliftMoment = hydrostaticUplift * upliftCentroid;
@@ -120,7 +121,7 @@ export const getUnitLabel = (property: string, unitSystem: 'SI' | 'English'): st
 // Helper function to get CG explanation based on dam shape
 // Returns an array of strings that can be mapped to JSX elements in the React component
 export const getCGExplanationLines = (shape: string, bottomWidth: number, topWidth: number, unitSystem: 'SI' | 'English'): string[] => {
-  // Universal formula explanation lines
+  // Universal formula explanation lines - apply this to ALL shapes without simplification
   const formulaLines = [
     `= Base - (Base² + Base×Top + Top²) / (3 × (Base + Top))`,
     `= ${formatNumber(bottomWidth)} - (${formatNumber(bottomWidth * bottomWidth + 
@@ -133,13 +134,15 @@ export const getCGExplanationLines = (shape: string, bottomWidth: number, topWid
          (3 * (bottomWidth + topWidth))))} ${getUnitLabel('length', unitSystem)}`
   ];
 
-  // For rectangular shape, add a note that it simplifies to Base/2
-  if (shape === 'rectangular' && bottomWidth === topWidth) {
-    return [
-      ...formulaLines,
-      `For rectangular shape where Base = Top, this simplifies to Base/2 = ${formatNumber(bottomWidth/2)} ${getUnitLabel('length', unitSystem)}`
-    ];
-  }
-
+  // We're not adding simplification notes for rectangular dams as requested
   return formulaLines;
+};
+
+// Helper function to get uplift centroid explanation
+export const getUpliftCentroidExplanation = (bottomWidth: number, unitSystem: 'SI' | 'English'): string[] => {
+  return [
+    `Centroid = 2/3 × Base`,
+    `= 2/3 × ${formatNumber(bottomWidth)}`,
+    `= ${formatNumber((2/3) * bottomWidth)} ${getUnitLabel('length', unitSystem)}`
+  ];
 };
